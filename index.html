@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07090f">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<title>STEP UP</title>
+<style>
+  :root {
+    --bg: #07090f; --card: #11151f; --card2: #171c28; --line: #232a3a;
+    --text: #f5f7fb; --sub: #8a94a7; --blue: #3b82f6; --blue2: #60a5fa; --blue3: #1e3a8a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", Roboto, sans-serif; }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  input { font: inherit; }
+
+  header { position: sticky; top: 0; z-index: 5; background: rgba(7,9,15,.92); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .logo { font-weight: 800; letter-spacing: .08em; }
+  .logo span { color: var(--blue2); }
+  .chips { display: flex; gap: 8px; }
+  .chip { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+
+  main { padding: 16px; max-width: 520px; margin: 0 auto; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+  .card h2 { margin: 0 0 10px; font-size: 15px; color: var(--sub); font-weight: 600; }
+  .big { font-size: 44px; font-weight: 800; line-height: 1; }
+  .sub { color: var(--sub); font-size: 13px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .btn { background: var(--blue); color: #fff; border-radius: 12px; padding: 13px 16px; font-weight: 700; width: 100%; }
+  .btn:active { transform: scale(.98); }
+  .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--text); font-weight: 600; }
+  .btn.white { background: #fff; color: #07090f; }
+  .btn[disabled] { opacity: .35; }
+  .btn.sm { width: auto; padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+  .gap { height: 10px; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue2)); border-radius: 99px; transition: width .4s; }
+
+  /* ログボ */
+  .login-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .lday { background: var(--card2); border: 1px solid var(--line); border-radius: 10px; text-align: center; padding: 8px 0; font-size: 11px; color: var(--sub); }
+  .lday b { display: block; font-size: 14px; color: var(--text); margin-top: 2px; }
+  .lday.got { background: var(--blue3); border-color: var(--blue); color: #c7d7fe; }
+  .lday.next { border-color: var(--blue2); box-shadow: 0 0 0 2px rgba(96,165,250,.25); }
+  .lday.boss b { color: var(--blue2); }
+
+  /* ミッション・リスト */
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .item:first-of-type { border-top: 0; }
+  .check { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; font-size: 15px; }
+  .check.on { background: var(--blue); border-color: var(--blue); }
+  .item .grow { flex: 1; }
+  .item .name { font-weight: 600; }
+
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 22px; height: 8px; border-radius: 99px; background: var(--line); }
+  .dots i.on { background: var(--blue2); }
+
+  /* カレンダー */
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal div { aspect-ratio: 1; border-radius: 6px; background: var(--card2); font-size: 10px; display: grid; place-items: center; color: var(--sub); }
+  .cal .full { background: var(--blue); color: #fff; }
+  .cal .mini { background: var(--blue3); color: #c7d7fe; }
+  .cal .run { background: #0ea5e9; color: #fff; }
+  .cal .freeze { background: #2a3142; color: #c9d2e3; }
+  .cal .today { outline: 2px solid #fff; }
+
+  /* 週グラフ */
+  .chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; position: relative; margin-top: 8px; }
+  .chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .chart .b { width: 100%; border-radius: 6px 6px 2px 2px; background: var(--blue); min-height: 2px; }
+  .chart .b.over { background: #3a4357; }
+  .chart-lbl { display: flex; gap: 8px; margin-top: 6px; }
+  .chart-lbl .lbl { flex: 1; text-align: center; font-size: 10px; color: var(--sub); line-height: 1.4; }
+  .chart .goal { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--blue2); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 4px; }
+  .stats .sub { font-size: 11px; }
+  .badges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .badge { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px; text-align: center; font-size: 11px; color: var(--sub); }
+  .badge .ic { font-size: 22px; filter: grayscale(1); opacity: .35; }
+  .badge.on { border-color: var(--blue); color: var(--text); }
+  .badge.on .ic { filter: none; opacity: 1; }
+
+  .stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper button { width: 44px; height: 44px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line); font-size: 20px; }
+  .stepper input { flex: 1; text-align: center; font-size: 28px; font-weight: 800; background: transparent; border: 0; color: var(--text); width: 60px; }
+  .tabs2 { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tabs2 button { flex: 1; padding: 8px; border-radius: 10px; background: var(--card2); border: 1px solid var(--line); font-size: 13px; color: var(--sub); }
+  .tabs2 button.on { border-color: var(--blue); color: var(--text); }
+  .field { width: 100%; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; color: var(--text); }
+
+  /* 推し */
+  .oshi-hero { position: relative; border-radius: 16px; overflow: hidden; margin-bottom: 14px; border: 1px solid var(--line); background: var(--card); }
+  .oshi-hero img { width: 100%; height: 280px; object-fit: cover; object-position: center 25%; display: block; }
+  .oshi-hero .noimg { height: 150px; display: grid; place-items: center; font-size: 48px; background: linear-gradient(135deg, var(--blue3), var(--bg)); }
+  .oshi-hero .bubble { position: absolute; left: 12px; right: 12px; bottom: 12px; }
+  .bubble { background: rgba(7,9,15,.85); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; line-height: 1.5; }
+  .bubble b { display: block; color: var(--blue2); font-size: 12px; }
+  .cheer { display: flex; gap: 12px; align-items: center; text-align: left; margin: 12px 0; }
+  .cheer .av { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; flex: none; border: 2px solid var(--blue); background: var(--blue3); display: grid; place-items: center; font-size: 30px; }
+  .cheer .bubble { flex: 1; background: var(--card2); }
+  .oshi-prev { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue); display: block; margin: 0 auto 10px; background: var(--card2); }
+  textarea.field { min-height: 90px; resize: vertical; }
+  .runlist .del { color: var(--sub); padding: 4px 8px; background: none; }
+
+  /* ナビ */
+  nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 5; display: flex; background: rgba(7,9,15,.96);
+    border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+  nav button { flex: 1; background: none; padding: 10px 0 12px; color: var(--sub); font-size: 11px; }
+  nav button .ni { display: block; font-size: 20px; margin-bottom: 2px; filter: grayscale(1); opacity: .6; }
+  nav button.on { color: var(--blue2); }
+  nav button.on .ni { filter: none; opacity: 1; }
+
+  /* モーダル */
+  .ov { position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 20; display: none; align-items: flex-end; justify-content: center; }
+  .ov.show { display: flex; }
+  .sheet { background: var(--card); border: 1px solid var(--line); border-radius: 22px 22px 0 0; width: 100%; max-width: 520px;
+    padding: 22px 18px calc(22px + env(safe-area-inset-bottom)); animation: up .25s ease; max-height: 90vh; overflow: auto; }
+  .sheet h3 { margin: 0 0 6px; font-size: 20px; }
+  .center { text-align: center; }
+  @keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .ring { width: 170px; height: 170px; margin: 16px auto; position: relative; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 46px; font-weight: 800; }
+  .reward { font-size: 54px; margin: 6px 0; animation: pop .5s ease; }
+  @keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+  .toast { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); background: #fff; color: #07090f; padding: 10px 16px;
+    border-radius: 999px; font-weight: 700; font-size: 14px; z-index: 30; opacity: 0; transition: opacity .25s, top .25s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; top: 80px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">STEP<span>UP</span></div>
+  <div class="chips">
+    <div class="chip" id="hLv"></div>
+    <div class="chip" id="hCoin"></div>
+  </div>
+</header>
+
+<main id="view"></main>
+
+<nav>
+  <button data-tab="home"><span class="ni">🏠</span>ホーム</button>
+  <button data-tab="workout"><span class="ni">💪</span>筋トレ</button>
+  <button data-tab="run"><span class="ni">🏃</span>ラン</button>
+  <button data-tab="screen"><span class="ni">📱</span>スマホ</button>
+  <button data-tab="record"><span class="ni">📊</span>記録</button>
+</nav>
+
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ================= 日付 ================= */
+const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const today = () => fmt(new Date());
+const addDays = (s, n) => { const [y, m, d] = s.split('-').map(Number); return fmt(new Date(y, m - 1, d + n)); };
+const daysBetween = (a, b) => { const [y1, m1, d1] = a.split('-').map(Number); const [y2, m2, d2] = b.split('-').map(Number);
+  return Math.round((new Date(y2, m2 - 1, d2) - new Date(y1, m1 - 1, d1)) / 86400000); };
+const WD = ['日', '月', '火', '水', '木', '金', '土'];
+const wd = (s) => { const [y, m, d] = s.split('-').map(Number); return WD[new Date(y, m - 1, d).getDay()]; };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const round5 = (n) => Math.max(5, Math.round(n / 5) * 5);
+
+/* ================= データ ================= */
+const KEY = 'stepup-data-v1';
+const defaultState = () => ({
+  v: 1, onboarded: false, xp: 0, coins: 0, freezes: 1,
+  login: { last: null, cycle: 0, total: 0 },
+  wo: { level: 1, prog: 0, hist: {}, todayChecks: { date: null, c: {} } },
+  sc: { base: null, goal: null, hist: {}, lastReview: null, goalHist: [] },
+  run: { hist: {}, goal: 2, week: null, goalHist: [], weekDone: {} },
+  oshi: { name: '', you: '', msgs: [] },
+  urge: {}, missions: {}, badges: {}, lastCheck: null,
+  rewards: [{ name: '好きなお菓子を買う', cost: 150 }, { name: '欲しかった物を1つ買う', cost: 800 }],
+});
+let S;
+try { S = Object.assign(defaultState(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { S = defaultState(); }
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+const IMG_KEY = 'stepup-oshi-img';
+let OSHI_IMG = localStorage.getItem(IMG_KEY);
+
+/* ================= ゲーム要素 ================= */
+const LOGIN_REWARDS = [10, 10, 15, 15, 20, 25, 60];
+const xpNeed = (lv) => 40 + lv * 20;
+function playerLevel() {
+  let lv = 1, rest = S.xp;
+  while (rest >= xpNeed(lv)) { rest -= xpNeed(lv); lv++; }
+  return { lv, rest, need: xpNeed(lv) };
+}
+const TITLES = [[1, 'はじめの一歩'], [3, '見習い'], [5, '習慣の芽'], [8, '継続の人'], [12, '鉄の意志'], [16, '自分を変えた人'], [20, 'レジェンド']];
+const title = (lv) => TITLES.filter(([l]) => lv >= l).pop()[1];
+
+function gain(xp, coins, msg) {
+  const before = playerLevel().lv;
+  S.xp += xp; S.coins += coins; save();
+  if (msg) toast(`${msg}  +${xp}XP${coins ? ` / +${coins}🪙` : ''}`);
+  const after = playerLevel().lv;
+  if (after > before) notify(`
+    <div class="center"><div class="reward">⭐</div><h3>プレイヤーレベル ${after}！</h3>
+    <p class="sub">称号「${title(after)}」</p>${cheerHTML('levelup')}<div class="gap"></div><button class="btn" data-act="close">OK</button></div>`);
+}
+
+/* ================= 運動メニュー（レベルで少しずつ増える） ================= */
+function menu(lv) {
+  const m = [];
+  m.push({ id: 'squat', name: 'スクワット', n: Math.min(5 + (lv - 1) * 2, 40), unit: '回' });
+  if (lv <= 5) m.push({ id: 'kpush', name: '膝つき腕立て', n: 3 + (lv - 1), unit: '回' });
+  else m.push({ id: 'push', name: '腕立て伏せ', n: Math.min(3 + (lv - 6), 25), unit: '回' });
+  m.push({ id: 'plank', name: 'プランク', n: Math.min(10 + (lv - 1) * 5, 120), unit: '秒', timer: true });
+  if (lv >= 4) m.push({ id: 'lunge', name: 'ランジ（左右）', n: Math.min(4 + (lv - 4), 20), unit: '回ずつ' });
+  if (lv >= 8) m.push({ id: 'knee', name: 'もも上げ', n: Math.min(20 + (lv - 8) * 5, 90), unit: '秒', timer: true });
+  if (lv >= 12) m.push({ id: 'crunch', name: '腹筋（クランチ）', n: Math.min(10 + (lv - 12) * 2, 40), unit: '回' });
+  return m;
+}
+const miniMenu = (lv) => [{ id: 'mini', name: 'スクワット', n: Math.max(3, Math.ceil(menu(lv)[0].n / 2)), unit: '回' }];
+const PROG_NEED = 3;
+
+function todayChecks() {
+  if (S.wo.todayChecks.date !== today()) S.wo.todayChecks = { date: today(), c: {} };
+  return S.wo.todayChecks.c;
+}
+// 筋トレ・ラン・おやすみチケットのどれかがあれば「動いた日」
+const active = (d) => !!(S.wo.hist[d] || (S.run.hist[d] && S.run.hist[d].length));
+function woStreak() {
+  let d = active(today()) ? today() : addDays(today(), -1), n = 0;
+  while (active(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+function bestStreak() {
+  const days = [...new Set([...Object.keys(S.wo.hist), ...Object.keys(S.run.hist).filter(active)])].sort();
+  let best = 0, cur = 0, prev = null;
+  for (const d of days) { cur = prev && daysBetween(prev, d) === 1 ? cur + 1 : 1; best = Math.max(best, cur); prev = d; }
+  return best;
+}
+
+/* 休んだ日をおやすみチケットで自動的に守る */
+function processMissedDays() {
+  const t = today();
+  if (!S.lastCheck) { S.lastCheck = t; save(); return; }
+  let d = addDays(S.lastCheck, 1);
+  const used = [];
+  while (daysBetween(d, t) >= 1) {
+    const prev = addDays(d, -1);
+    if (!active(d) && active(prev) && S.freezes > 0) { S.wo.hist[d] = { type: 'freeze' }; S.freezes--; used.push(d); }
+    d = addDays(d, 1);
+  }
+  S.lastCheck = t; save();
+  if (used.length) setTimeout(() => toast(`🛡 おやすみチケットで連続記録を守りました（${used.length}枚）`), 1200);
+}
+
+/* ================= ラン（週の距離目標が少しずつ上がる） ================= */
+const weekStart = (s) => { const [y, m, d] = s.split('-').map(Number); const dow = new Date(y, m - 1, d).getDay(); return addDays(s, -((dow + 6) % 7)); };
+const weekKm = (ws) => { let k = 0; for (let i = 0; i < 7; i++) (S.run.hist[addDays(ws, i)] || []).forEach((r) => k += r.km); return Math.round(k * 10) / 10; };
+const allRuns = () => Object.entries(S.run.hist).flatMap(([d, rs]) => rs.map((r) => ({ ...r, date: d }))).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
+const totalKm = () => Math.round(allRuns().reduce((a, r) => a + r.km, 0) * 10) / 10;
+const fmtKm = (k) => (Math.round(k * 10) / 10).toFixed(1);
+function pace(km, min) { if (!min || !km) return ''; const sec = Math.round(min * 60 / km); return `${Math.floor(sec / 60)}'${String(sec % 60).padStart(2, '0')}"/km`; }
+function runWeeklyReview() {
+  const ws = weekStart(today());
+  if (!S.run.week) { S.run.week = ws; save(); return; }
+  if (S.run.week === ws) return;
+  const km = weekKm(S.run.week), old = S.run.goal;
+  if (km >= old) {
+    S.run.goal = Math.min(40, Math.round(Math.max(old + 0.5, old * 1.15) * 2) / 2);
+    S.run.goalHist.push({ date: today(), goal: S.run.goal });
+    notify(`<div class="center"><div class="reward">📈</div><h3>ランの目標アップ！</h3><p>先週 ${fmtKm(km)}km 達成！</p>
+      <p>今週の目標：${fmtKm(old)}km → <b>${fmtKm(S.run.goal)}km</b></p>${cheerHTML('levelup')}<button class="btn" data-act="close">OK</button></div>`);
+  }
+  S.run.week = ws; save();
+}
+
+/* ================= スマホ時間 ================= */
+function screenWeeklyReview() {
+  const t = today();
+  if (!S.sc.lastReview) { S.sc.lastReview = t; return null; }
+  if (daysBetween(S.sc.lastReview, t) < 7) return null;
+  let ok = 0, rec = 0;
+  for (let i = 1; i <= 7; i++) { const d = addDays(t, -i); const v = S.sc.hist[d]; if (v != null) { rec++; if (v <= S.sc.goal) ok++; } }
+  S.sc.lastReview = t;
+  if (ok >= 5 && S.sc.goal > 30) {
+    const old = S.sc.goal; S.sc.goal = Math.max(30, round5(S.sc.goal * 0.9));
+    S.sc.goalHist.push({ date: t, goal: S.sc.goal });
+    return { type: 'down', old, now: S.sc.goal };
+  }
+  return { type: 'keep', ok, rec };
+}
+
+/* ================= 推しの応援 ================= */
+const CHEERS = {
+  home: ['{you}、今日も来てくれてうれしい！', '少しずつでいいよ。{you}のペースでいこう', '今日もいっしょにがんばろうね', '{you}ならできるって信じてる！',
+    '昨日より1歩だけ前へ。それで十分だよ', 'がんばってる{you}、ちゃんと見てるからね'],
+  full: ['おつかれさま！{you}、かっこよかったよ！', '今日もやりきったね。えらすぎる…！', 'その積み重ね、ちゃんと見てるからね', '筋トレする{you}、最高！'],
+  mini: ['ちょっとでもやったの、ほんとにえらい！', 'ゼロにしなかった{you}、すごいよ。また明日ね', '今日はこれで十分。ゆっくり休んでね'],
+  run: ['{km}kmも走ったの！？すごい！', '走ってる{you}、最高にかっこいい！', 'ナイスラン！ゆっくり休んでね', '風を切る{you}、想像しただけで元気出る！'],
+  urge: ['ねえ{you}、いまはこっちを見てて？', 'その時間、いっしょに過ごそうよ', '動画より、{you}の未来のほうが楽しみだな', '60秒だけ、がまんしてみよ？'],
+  urgeWin: ['がまんできたね！さすが{you}！', 'えらい！今のでまた一歩前進だよ', 'その強さ、ほんとに尊敬する'],
+  login: ['来てくれてありがとう！今日もよろしくね', '{you}、待ってたよ！', '今日も会えたね。いい1日にしよう'],
+  screen: ['記録してくれてありがとう。続けることが大事だよ', '時間の使い方、どんどん上手になってるね'],
+  screenOk: ['目標達成！{you}、すごいよ！', 'スマホに勝ったね！かっこいい！'],
+  levelup: ['レベルアップおめでとう！どんどん強くなってるね', 'ここまで来たの、ほんとにすごい！'],
+};
+const oshiSet = () => !!(OSHI_IMG || S.oshi.name);
+const oshiName = () => S.oshi.name || '推し';
+function cheerText(ctx, vars = {}) {
+  let pool = CHEERS[ctx] || CHEERS.home;
+  const custom = S.oshi.msgs.filter(Boolean);
+  if (custom.length && (ctx === 'home' ? Math.random() < 0.5 : Math.random() < 0.3)) pool = custom;
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  return t.replace(/\{you\}/g, S.oshi.you || 'あなた').replace(/\{km\}/g, vars.km ?? '');
+}
+const avatar = () => OSHI_IMG ? `<img class="av" src="${OSHI_IMG}" alt="">` : `<div class="av">💙</div>`;
+function cheerHTML(ctx, vars) {
+  if (!oshiSet()) return '';
+  return `<div class="cheer">${avatar()}<div class="bubble"><b>${esc(oshiName())}</b>${esc(cheerText(ctx, vars))}</div></div>`;
+}
+// 画像を縮小して保存（スマホの容量を食わないように）
+function loadImage(file) {
+  return new Promise((ok, ng) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const max = 800, r = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = ng; img.src = url;
+  });
+}
+
+/* ================= 実績バッジ ================= */
+const BADGES = [
+  { id: 'first', ic: '💪', name: '初めての筋トレ', ok: () => Object.values(S.wo.hist).some((h) => h.type !== 'freeze') },
+  { id: 's3', ic: '🔥', name: '3日連続', ok: () => bestStreak() >= 3 },
+  { id: 's7', ic: '🔥', name: '7日連続', ok: () => bestStreak() >= 7 },
+  { id: 's14', ic: '💎', name: '14日連続', ok: () => bestStreak() >= 14 },
+  { id: 's30', ic: '👑', name: '30日連続', ok: () => bestStreak() >= 30 },
+  { id: 'lv5', ic: '🦾', name: '筋トレLv5', ok: () => S.wo.level >= 5 },
+  { id: 'lv10', ic: '🏋️', name: '筋トレLv10', ok: () => S.wo.level >= 10 },
+  { id: 'u10', ic: '🧘', name: '誘惑に10回勝つ', ok: () => totalUrge() >= 10 },
+  { id: 'u50', ic: '🛡', name: '誘惑に50回勝つ', ok: () => totalUrge() >= 50 },
+  { id: 'g7', ic: '📵', name: 'スマホ目標7回達成', ok: () => goalHits() >= 7 },
+  { id: 'gd', ic: '📉', name: '目標時間を下げた', ok: () => S.sc.goalHist.length >= 1 },
+  { id: 'l30', ic: '🎁', name: 'ログイン30日', ok: () => S.login.total >= 30 },
+  { id: 'r1', ic: '🏃', name: '初めてのラン', ok: () => allRuns().length >= 1 },
+  { id: 'r5', ic: '⚡', name: '1回で5km', ok: () => allRuns().some((r) => r.km >= 5) },
+  { id: 'r10', ic: '🗺', name: '累計10km', ok: () => totalKm() >= 10 },
+  { id: 'r50', ic: '🌏', name: '累計50km', ok: () => totalKm() >= 50 },
+  { id: 'r100', ic: '🏅', name: '累計100km', ok: () => totalKm() >= 100 },
+  { id: 'rg', ic: '📈', name: 'ラン目標アップ', ok: () => S.run.goalHist.length >= 1 },
+];
+const totalUrge = () => Object.values(S.urge).reduce((a, b) => a + b, 0);
+const goalHits = () => Object.values(S.sc.hist).filter((v) => v <= S.sc.goal).length;
+function checkBadges() {
+  for (const b of BADGES) if (!S.badges[b.id] && b.ok()) {
+    S.badges[b.id] = today(); save();
+    notify(`<div class="center"><div class="reward">${b.ic}</div><h3>実績解除！</h3><p>${b.name}</p>
+      <p class="sub">+30🪙</p><button class="btn" data-act="close">やった！</button></div>`);
+    S.coins += 30; save();
+  }
+}
+
+/* ================= デイリーミッション ================= */
+function missions() {
+  const t = today();
+  return [
+    { name: 'ログインボーナスを受け取る', done: S.login.last === t, tab: 'home' },
+    { name: '体を動かす（筋トレ・ミニ・ラン）', done: (!!S.wo.hist[t] && S.wo.hist[t].type !== 'freeze') || active(t) && !S.wo.hist[t], tab: 'workout' },
+    { name: 'スマホ時間を記録する', done: S.sc.hist[t] != null || !!S.missions[t + 'sc'], tab: 'screen' },
+  ];
+}
+function checkMissionBonus() {
+  const t = today();
+  if (!S.missions[t] && missions().every((m) => m.done)) {
+    S.missions[t] = true; save();
+    notify(`<div class="center"><div class="reward">🏆</div><h3>今日のミッション全部クリア！</h3>
+      <p class="sub">ボーナス +20🪙 +10XP</p><button class="btn" data-act="close">OK</button></div>`);
+    gain(10, 20);
+  }
+}
+
+/* ================= UI共通 ================= */
+const $ = (s) => document.querySelector(s);
+let tab = 'home';
+let scDay = 'today';
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
+function modal(html) { $('#sheet').innerHTML = html; $('#ov').classList.add('show'); }
+function closeModal() { $('#ov').classList.remove('show'); clearInterval(timerId); setTimeout(flushQueue, 250); }
+// ごほうび系のポップアップは順番待ちにして、重ならないようにする
+const queue = [];
+function notify(html) { queue.push(html); setTimeout(flushQueue, 50); }
+function flushQueue() { if (!$('#ov').classList.contains('show') && queue.length) { modal(queue.shift()); header(); } }
+let timerId = null;
+
+function header() {
+  const p = playerLevel();
+  $('#hLv').textContent = `Lv.${p.lv}`;
+  $('#hCoin').textContent = `🪙 ${S.coins}`;
+}
+
+/* ================= 画面: ホーム ================= */
+function viewHome() {
+  const p = playerLevel(), st = woStreak(), t = today(), ms = missions();
+  const got = S.login.last === t;
+  const idx = S.login.cycle % 7;  // 次に受け取る日のインデックス
+  const shownGot = got ? (idx === 0 ? 7 : idx) : idx;
+  const loginGrid = LOGIN_REWARDS.map((r, i) => {
+    const cls = i < shownGot ? 'got' : (!got && i === idx ? 'next' : '');
+    return `<div class="lday ${cls} ${i === 6 ? 'boss' : ''}">${i + 1}日目<b>${i < shownGot ? '✓' : r}</b></div>`;
+  }).join('');
+  const greet = (() => { const h = new Date().getHours(); return h < 11 ? 'おはよう' : h < 18 ? 'こんにちは' : 'おつかれさま'; })();
+  const hero = oshiSet()
+    ? `<div class="oshi-hero" data-act="oshiTap">${OSHI_IMG ? `<img src="${OSHI_IMG}" alt="">` : '<div class="noimg">💙</div>'}
+        <div class="bubble"><b>${esc(oshiName())}</b><span id="heroMsg">${esc(cheerText('home'))}</span></div></div>`
+    : `<div class="card row"><div><div style="font-weight:700">推しに応援してもらおう</div><div class="sub">画像を設定すると、がんばるたびに声をかけてくれます</div></div>
+        <button class="btn sm" data-act="oshiEdit">設定</button></div>`;
+  return `${hero}
+  <div class="card">
+    <div class="sub">${greet}。今日も1歩だけ進もう。</div>
+    <div class="gap"></div>
+    <div class="row">
+      <div><div class="big">${st}<span style="font-size:18px"> 日</span></div><div class="sub">体を動かした連続記録 🔥</div></div>
+      <div style="text-align:right"><div style="font-weight:700">${title(p.lv)}</div><div class="sub">🛡 おやすみチケット ${S.freezes}枚</div></div>
+    </div>
+    <div class="gap"></div>
+    <div class="row sub"><span>プレイヤー Lv.${p.lv}</span><span>${p.rest} / ${p.need} XP</span></div>
+    <div class="bar" style="margin-top:6px"><i style="width:${p.rest / p.need * 100}%"></i></div>
+  </div>
+
+  <div class="card">
+    <h2>ログインボーナス</h2>
+    <div class="login-grid">${loginGrid}</div>
+    <div class="gap"></div>
+    ${got ? `<div class="sub center">今日の分は受け取り済み。また明日！</div>`
+          : `<button class="btn" data-act="claimLogin">受け取る（+${LOGIN_REWARDS[idx]}🪙）</button>`}
+  </div>
+
+  <div class="card">
+    <h2>今日のミッション <span class="sub">（全部で +20🪙）</span></h2>
+    ${ms.map((m) => `<div class="item" data-tab="${m.tab}">
+      <div class="check ${m.done ? 'on' : ''}">${m.done ? '✓' : ''}</div>
+      <div class="grow name">${m.name}</div><div class="sub">›</div></div>`).join('')}
+  </div>`;
+}
+
+/* ================= 画面: 運動 ================= */
+function viewWorkout() {
+  const lv = S.wo.level, t = today(), done = S.wo.hist[t] && S.wo.hist[t].type !== 'freeze';
+  const c = todayChecks(), m = menu(lv);
+  const all = m.every((x) => c[x.id]);
+  const dots = Array.from({ length: PROG_NEED }, (_, i) => `<i class="${i < S.wo.prog ? 'on' : ''}"></i>`).join('');
+  if (done) {
+    const h = S.wo.hist[t];
+    return `
+    <div class="card center">
+      <div class="reward">✅</div>
+      <h3 style="margin:0">今日の筋トレは完了！</h3>
+      <p class="sub">${h.type === 'mini' ? 'ミニメニューでも立派な1日。続けたことが一番大事。' : 'ナイス！体は確実に変わっていきます。'}</p>
+      <p class="sub">連続 ${woStreak()} 日</p>
+    </div>
+    ${levelCard(lv, dots)}
+    <div class="card"><h2>明日のメニュー</h2>${m.map((x) => `<div class="item"><div class="grow name">${x.name}</div><div class="sub">${x.n}${x.unit}</div></div>`).join('')}</div>`;
+  }
+  return `
+  ${levelCard(lv, dots)}
+  <div class="card">
+    <h2>今日のメニュー <span class="sub">（目安 約${Math.max(2, Math.round(m.length * 0.8))}分）</span></h2>
+    ${m.map((x) => `<div class="item" data-act="${x.timer ? 'timer' : 'check'}" data-id="${x.id}">
+      <div class="check ${c[x.id] ? 'on' : ''}">${c[x.id] ? '✓' : ''}</div>
+      <div class="grow"><div class="name">${x.name}</div><div class="sub">${x.timer ? 'タップでタイマー開始' : 'できたらタップ'}</div></div>
+      <div style="font-weight:800;font-size:18px">${x.n}<span class="sub"> ${x.unit}</span></div></div>`).join('')}
+    <div class="gap"></div>
+    <button class="btn" data-act="finishWo" ${all ? '' : 'disabled'}>完了する</button>
+  </div>
+  <div class="card">
+    <h2>今日はしんどい日？</h2>
+    <p class="sub" style="margin-top:0">ゼロの日を作らないのがコツ。スクワット${miniMenu(lv)[0].n}回だけでも連続記録はつながります。</p>
+    <button class="btn ghost" data-act="mini">ミニメニュー（30秒）で済ませる</button>
+  </div>`;
+}
+function levelCard(lv, dots) {
+  return `<div class="card">
+    <div class="row"><div><div class="sub">筋トレレベル</div><div class="big">Lv.${lv}</div></div>
+      <div style="text-align:right"><div class="dots">${dots}</div><div class="sub" style="margin-top:6px">あと${PROG_NEED - S.wo.prog}回でレベルアップ</div></div></div>
+  </div>`;
+}
+
+/* ================= 画面: スマホ時間 ================= */
+function viewScreen() {
+  const t = today(), g = S.sc.goal;
+  const day = scDay === 'today' ? t : addDays(t, -1);
+  const cur = S.sc.hist[day];
+  const nextReview = S.sc.lastReview ? Math.max(0, 7 - daysBetween(S.sc.lastReview, t)) : 7;
+  const days = Array.from({ length: 7 }, (_, i) => addDays(t, i - 6));
+  const vals = days.map((d) => S.sc.hist[d]);
+  const max = Math.max(g * 1.4, ...vals.filter((v) => v != null), 30);
+  const chart = days.map((d, i) => {
+    const v = vals[i];
+    return `<div class="col"><div class="b ${v != null && v > g ? 'over' : ''}" style="${v == null ? 'visibility:hidden' : `height:${v / max * 100}%`}"></div></div>`;
+  }).join('');
+  const labels = days.map((d, i) => `<div class="lbl">${vals[i] ?? '-'}<br>${wd(d)}</div>`).join('');
+  const resisted = S.urge[t] || 0;
+  return `
+  <div class="card">
+    <h2>1日の目標（YouTube・SNSなど）</h2>
+    <div class="row"><div class="big">${g}<span style="font-size:18px"> 分以内</span></div>
+      <div class="sub" style="text-align:right">スタート時 ${S.sc.base}分<br>見直しまで あと${nextReview}日</div></div>
+    <p class="sub">7日中5日達成すると、目標が自動で10%下がります。無理せず少しずつ。</p>
+  </div>
+
+  <button class="btn white" data-act="urge" style="padding:18px;font-size:16px;margin-bottom:14px">
+    😵 YouTubeを開きたくなったら押す</button>
+  <div class="sub center" style="margin:-6px 0 14px">今日 誘惑に勝った回数：${resisted}回</div>
+
+  <div class="card">
+    <h2>使った時間を記録</h2>
+    <div class="tabs2">
+      <button class="${scDay === 'today' ? 'on' : ''}" data-act="scDay" data-v="today">今日</button>
+      <button class="${scDay === 'yday' ? 'on' : ''}" data-act="scDay" data-v="yday">昨日</button>
+    </div>
+    <div class="stepper">
+      <button data-act="step" data-v="-10">−</button>
+      <input id="scInput" type="number" inputmode="numeric" value="${cur ?? g}">
+      <button data-act="step" data-v="10">＋</button>
+    </div>
+    <div class="sub center">分</div>
+    <div class="gap"></div>
+    <button class="btn" data-act="saveScreen">${cur != null ? '記録を更新する' : '記録する'}</button>
+    <p class="sub">時間は Android の「設定 → Digital Wellbeing と保護者による使用制限」で確認できます。</p>
+  </div>
+
+  <div class="card">
+    <h2>この1週間 <span class="sub">（点線＝目標）</span></h2>
+    <div class="chart"><div class="goal" style="bottom:${g / max * 100}%"></div>${chart}</div>
+    <div class="chart-lbl">${labels}</div>
+  </div>`;
+}
+
+/* ================= 画面: ラン ================= */
+let runDay = 'today';
+function viewRun() {
+  const ws = weekStart(today()), km = weekKm(ws), g = S.run.goal;
+  const pct = Math.min(100, km / g * 100), runs = allRuns();
+  const left = Math.max(0, Math.round((g - km) * 10) / 10);
+  const daysLeft = 7 - daysBetween(ws, today());
+  return `
+  <div class="card">
+    <h2>今週の目標</h2>
+    <div class="row"><div class="big">${fmtKm(km)}<span style="font-size:18px"> / ${fmtKm(g)} km</span></div>
+      <div class="sub" style="text-align:right">${left > 0 ? `あと ${fmtKm(left)}km` : '達成！🎉'}<br>残り ${daysLeft}日</div></div>
+    <div class="bar" style="margin-top:12px"><i style="width:${pct}%"></i></div>
+    <p class="sub">達成すると来週の目標が少しだけ上がります。歩きながらでもOK。</p>
+  </div>
+
+  <div class="card">
+    <h2>ランを記録</h2>
+    <div class="tabs2">
+      <button class="${runDay === 'today' ? 'on' : ''}" data-act="runDay" data-v="today">今日</button>
+      <button class="${runDay === 'yday' ? 'on' : ''}" data-act="runDay" data-v="yday">昨日</button>
+    </div>
+    <div class="sub">距離</div>
+    <div class="stepper">
+      <button data-act="runStep" data-v="-0.5">−</button>
+      <input id="runKm" type="number" inputmode="decimal" step="0.1" min="0" value="${runs[0] ? fmtKm(runs[0].km) : '1.0'}">
+      <button data-act="runStep" data-v="0.5">＋</button>
+    </div>
+    <div class="sub center">km</div>
+    <div class="gap"></div>
+    <div class="sub">時間（任意）</div>
+    <input class="field" id="runMin" type="number" inputmode="decimal" placeholder="例：12（分）">
+    <div class="gap"></div>
+    <button class="btn" data-act="saveRun">記録する</button>
+    ${runs.length ? '' : '<p class="sub">はじめは1kmを「歩く＋ゆっくり走る」でOK。続けることが一番大事です。</p>'}
+  </div>
+
+  <div class="card">
+    <h2>ラン記録 <span class="sub">累計 ${fmtKm(totalKm())}km / ${runs.length}回</span></h2>
+    <div class="runlist">
+    ${runs.length ? runs.slice(0, 15).map((r) => `<div class="item">
+      <div class="grow"><div class="name">${fmtKm(r.km)} km</div><div class="sub">${r.date.slice(5).replace('-', '/')}（${wd(r.date)}）${r.min ? ` ・ ${r.min}分 ・ ${pace(r.km, r.min)}` : ''}</div></div>
+      <button class="del" data-act="delRun" data-d="${r.date}" data-id="${r.id}">×</button></div>`).join('')
+      : '<div class="sub">まだ記録がありません</div>'}
+    </div>
+  </div>`;
+}
+
+/* ================= 画面: 記録 ================= */
+function viewRecord() {
+  const t = today();
+  const start = addDays(t, -27);
+  // 曜日をそろえる
+  const pad = (() => { const [y, m, d] = start.split('-').map(Number); return new Date(y, m - 1, d).getDay(); })();
+  let cal = WD.map((w) => `<div style="background:none">${w}</div>`).join('') + '<div style="background:none"></div>'.repeat(pad);
+  for (let i = 0; i < 28; i++) {
+    const d = addDays(start, i), h = S.wo.hist[d];
+    const cls = h ? h.type : active(d) ? 'run' : '';
+    cal += `<div class="${cls} ${d === t ? 'today' : ''}">${Number(d.slice(8))}</div>`;
+  }
+  const workouts = [...new Set([...Object.keys(S.wo.hist).filter((d) => S.wo.hist[d].type !== 'freeze'), ...Object.keys(S.run.hist).filter(active)])].length;
+  return `
+  <div class="card">
+    <h2>まとめ</h2>
+    <div class="stats">
+      <div><div style="font-size:24px;font-weight:800">${workouts}</div><div class="sub">動いた日</div></div>
+      <div><div style="font-size:24px;font-weight:800">${bestStreak()}</div><div class="sub">最長連続</div></div>
+      <div><div style="font-size:24px;font-weight:800">${totalUrge()}</div><div class="sub">誘惑に勝った</div></div>
+      <div><div style="font-size:24px;font-weight:800">${goalHits()}</div><div class="sub">スマホ目標達成</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>カレンダー（4週間）</h2>
+    <div class="cal">${cal}</div>
+    <div class="gap"></div>
+    <div class="sub">■ 青＝筋トレ　■ 紺＝ミニ　■ 水色＝ランのみ　■ 灰＝おやすみチケット</div>
+  </div>
+
+  <div class="card">
+    <h2>実績 <span class="sub">${Object.keys(S.badges).length}/${BADGES.length}</span></h2>
+    <div class="badges">${BADGES.map((b) => `<div class="badge ${S.badges[b.id] ? 'on' : ''}"><div class="ic">${b.ic}</div>${b.name}</div>`).join('')}</div>
+  </div>
+
+  <div class="card">
+    <h2>ショップ <span class="sub">所持 🪙${S.coins}</span></h2>
+    <div class="item">
+      <div class="grow"><div class="name">🛡 おやすみチケット</div><div class="sub">運動を休んだ日も連続記録を守る（所持 ${S.freezes}/3）</div></div>
+      <button class="btn sm" data-act="buyFreeze" ${S.coins < 100 || S.freezes >= 3 ? 'disabled' : ''}>100🪙</button>
+    </div>
+    ${S.rewards.map((r, i) => `<div class="item">
+      <div class="grow"><div class="name">🎁 ${esc(r.name)}</div><div class="sub" data-act="delReward" data-i="${i}" style="text-decoration:underline">削除</div></div>
+      <button class="btn sm" data-act="buyReward" data-i="${i}" ${S.coins < r.cost ? 'disabled' : ''}>${r.cost}🪙</button></div>`).join('')}
+    <div class="gap"></div>
+    <button class="btn ghost" data-act="addReward">＋ 自分へのごほうびを追加</button>
+  </div>
+
+  <div class="card">
+    <h2>設定</h2>
+    <div class="item"><div class="grow name">推しの設定</div><button class="btn sm ghost" data-act="oshiEdit">${oshiSet() ? '変更' : '設定する'}</button></div>
+    <div class="item"><div class="grow name">ランの週目標</div>
+      <button class="btn sm ghost" data-act="runGoal" data-v="-0.5">−</button><b style="width:52px;text-align:center">${fmtKm(S.run.goal)}km</b><button class="btn sm ghost" data-act="runGoal" data-v="0.5">＋</button></div>
+    <div class="item"><div class="grow name">筋トレレベル</div>
+      <button class="btn sm ghost" data-act="lvDown">−</button><b style="width:40px;text-align:center">${S.wo.level}</b><button class="btn sm ghost" data-act="lvUp">＋</button></div>
+    <div class="item"><div class="grow name">スマホ時間の目標</div><button class="btn sm ghost" data-act="editGoal">${S.sc.goal}分 を変更</button></div>
+    <div class="item"><div class="grow name">データのバックアップ</div><button class="btn sm ghost" data-act="export">保存</button><button class="btn sm ghost" data-act="import">読込</button></div>
+    <div class="item"><div class="grow name" style="color:#f87171">すべてリセット</div><button class="btn sm ghost" data-act="reset">リセット</button></div>
+  </div>`;
+}
+
+/* ================= 描画 ================= */
+function render() {
+  header();
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#view').innerHTML = { home: viewHome, workout: viewWorkout, run: viewRun, screen: viewScreen, record: viewRecord }[tab]();
+}
+
+/* ================= アクション ================= */
+function startTimer(sec, label, onDone) {
+  const R = 75, C = 2 * Math.PI * R;
+  let left = sec, running = false;
+  modal(`<div class="center"><h3>${label}</h3>
+    <div class="ring"><svg width="170" height="170"><circle cx="85" cy="85" r="${R}" stroke="#232a3a" stroke-width="10" fill="none"/>
+    <circle id="rg" cx="85" cy="85" r="${R}" stroke="#3b82f6" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg>
+    <div class="num" id="rn">${sec}</div></div>
+    <button class="btn" id="tStart">スタート</button><div class="gap"></div>
+    <button class="btn ghost" data-act="timerSkip">終わったことにする</button></div>`);
+  const finish = () => { clearInterval(timerId); navigator.vibrate && navigator.vibrate([200, 100, 200]); closeModal(); onDone(); };
+  timerDone = finish;
+  $('#tStart').onclick = () => {
+    if (running) return; running = true; $('#tStart').disabled = true; $('#tStart').textContent = 'がんばれ！';
+    timerId = setInterval(() => {
+      left--;
+      $('#rn').textContent = left;
+      $('#rg').setAttribute('stroke-dashoffset', C * (1 - left / sec));
+      if (left <= 0) finish();
+    }, 1000);
+  };
+}
+let timerDone = null;
+
+function completeWorkout(type, feel) {
+  const t = today();
+  S.wo.hist[t] = { type, feel };
+  let msg = '', lvUp = false;
+  if (type === 'full') {
+    S.wo.prog += feel === 'easy' ? 2 : feel === 'ok' ? 1 : 0;
+    if (S.wo.prog >= PROG_NEED) { S.wo.level++; S.wo.prog = 0; lvUp = true; }
+  }
+  save();
+  const st = woStreak();
+  const bonus = st > 0 && st % 7 === 0 ? 50 : 0;
+  if (type === 'full') gain(30, 20 + bonus); else gain(10, 5 + bonus);
+  if (lvUp) msg = `<p>運動レベルが <b>Lv.${S.wo.level}</b> に上がりました！<br><span class="sub">明日からメニューが少しだけ増えます</span></p>`;
+  else if (type === 'full' && feel === 'hard') msg = `<p class="sub">きつかったので、レベルは据え置き。慣れるまで同じメニューでOK。</p>`;
+  modal(`<div class="center"><div class="reward">${lvUp ? '🆙' : '💪'}</div><h3>${st}日連続！</h3>
+    ${msg}${cheerHTML(type)}<p class="sub">+${type === 'full' ? 30 : 10}XP / +${(type === 'full' ? 20 : 5) + bonus}🪙${bonus ? '（7日ごとボーナス込み）' : ''}</p>
+    <button class="btn" data-act="close">OK</button></div>`);
+  checkBadges(); checkMissionBonus(); render();
+}
+
+const URGE_TIPS = ['スクワットを10回やってみる', '水を1杯飲む', '窓の外を30秒見る', '深呼吸を5回する', '部屋を1か所だけ片付ける',
+  '明日やることを1つ書き出す', 'ストレッチを1分する', 'スマホを別の部屋に置く', '本を1ページだけ読む'];
+
+const actions = {
+  close: closeModal,
+  claimLogin() {
+    if (S.login.last === today()) return;
+    const r = LOGIN_REWARDS[S.login.cycle % 7];
+    S.login.last = today(); S.login.cycle++; S.login.total++;
+    gain(5, r);
+    modal(`<div class="center"><div class="reward">${r >= 60 ? '💰' : '🎁'}</div><h3>ログインボーナス</h3>
+      <p>${r}🪙 を受け取りました</p><p class="sub">通算 ${S.login.total} 日目</p>${cheerHTML('login')}<button class="btn" data-act="close">OK</button></div>`);
+    checkBadges(); checkMissionBonus(); render();
+  },
+  check(el) { const c = todayChecks(); c[el.dataset.id] = !c[el.dataset.id]; save(); render(); },
+  timer(el) {
+    const x = menu(S.wo.level).find((m) => m.id === el.dataset.id);
+    const c = todayChecks();
+    if (c[x.id]) { c[x.id] = false; save(); render(); return; }
+    startTimer(x.n, x.name, () => { todayChecks()[x.id] = true; save(); render(); toast('ナイス！'); });
+  },
+  timerSkip() { timerDone && timerDone(); },
+  finishWo() {
+    modal(`<div class="center"><h3>おつかれさま！</h3><p class="sub">今日のメニューはどうだった？<br>（レベルの上がり方が変わります）</p>
+      <button class="btn ghost" data-act="feel" data-v="hard">😮‍💨 きつかった</button><div class="gap"></div>
+      <button class="btn ghost" data-act="feel" data-v="ok">🙂 ちょうどいい</button><div class="gap"></div>
+      <button class="btn ghost" data-act="feel" data-v="easy">😎 楽すぎた</button></div>`);
+  },
+  feel(el) { closeModal(); completeWorkout('full', el.dataset.v); },
+  mini() {
+    const x = miniMenu(S.wo.level)[0];
+    modal(`<div class="center"><div class="reward">🦵</div><h3>ミニメニュー</h3><p><b style="font-size:28px">${x.name} ${x.n}${x.unit}</b></p>
+      <p class="sub">これだけで今日はOK。終わったらボタンを押そう。</p>
+      <button class="btn" data-act="miniDone">できた！</button><div class="gap"></div><button class="btn ghost" data-act="close">やめる</button></div>`);
+  },
+  miniDone() { closeModal(); completeWorkout('mini'); },
+  scDay(el) { scDay = el.dataset.v; render(); },
+  step(el) { const i = $('#scInput'); i.value = Math.max(0, (Number(i.value) || 0) + Number(el.dataset.v)); },
+  saveScreen() {
+    const v = Math.max(0, Math.round(Number($('#scInput').value) || 0));
+    const day = scDay === 'today' ? today() : addDays(today(), -1);
+    const first = S.sc.hist[day] == null;
+    S.sc.hist[day] = v;
+    if (scDay === 'yday') S.missions[today() + 'sc'] = true;
+    const rv = screenWeeklyReview();
+    save();
+    const ok = v <= S.sc.goal;
+    if (first) gain(ok ? 20 : 5, ok ? 15 : 3); else toast('記録を更新しました');
+    if (rv && rv.type === 'down') {
+      modal(`<div class="center"><div class="reward">📉</div><h3>目標レベルアップ！</h3><p>${rv.old}分 → <b>${rv.now}分</b></p>
+        <p class="sub">この1週間よくがんばりました。新しい目標も少しずつで大丈夫。</p><button class="btn" data-act="close">OK</button></div>`);
+    } else if (first) {
+      modal(`<div class="center"><div class="reward">${ok ? '🎯' : '📝'}</div><h3>${ok ? '目標達成！' : '記録できました'}</h3>${cheerHTML(ok ? 'screenOk' : 'screen')}
+        <p class="sub">${ok ? `目標より ${S.sc.goal - v}分 少なかった！` : `目標まであと ${v - S.sc.goal}分。記録を続けるだけでも意識は変わります。`}</p>
+        <button class="btn" data-act="close">OK</button></div>`);
+    }
+    checkBadges(); checkMissionBonus(); render();
+  },
+  urge() {
+    const tip = URGE_TIPS[Math.floor(Math.random() * URGE_TIPS.length)];
+    const sec = 60, R = 75, C = 2 * Math.PI * R;
+    let left = sec;
+    modal(`<div class="center"><h3>60秒だけ待ってみよう</h3>${cheerHTML('urge')}<p class="sub">その間にこれをやってみる：</p><p><b>${tip}</b></p>
+      <div class="ring"><svg width="170" height="170"><circle cx="85" cy="85" r="${R}" stroke="#232a3a" stroke-width="10" fill="none"/>
+      <circle id="rg" cx="85" cy="85" r="${R}" stroke="#60a5fa" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${C}"/></svg>
+      <div class="num" id="rn">${sec}</div></div>
+      <button class="btn" id="uWin" data-act="urgeWin" disabled>見ないでおく（+5🪙）</button><div class="gap"></div>
+      <button class="btn ghost" data-act="urgeLose">やっぱり見る</button></div>`);
+    timerId = setInterval(() => {
+      left--; $('#rn').textContent = left; $('#rg').setAttribute('stroke-dashoffset', C * (1 - left / sec));
+      if (left <= 0) { clearInterval(timerId); $('#rn').textContent = '✓'; $('#uWin').disabled = false; navigator.vibrate && navigator.vibrate(150); }
+    }, 1000);
+  },
+  urgeWin() {
+    const t = today(); S.urge[t] = (S.urge[t] || 0) + 1; save(); closeModal();
+    if (S.urge[t] <= 5) gain(5, 5, '誘惑に勝った！'); else toast('誘惑に勝った！（今日の報酬上限に到達）');
+    if (oshiSet()) modal(`<div class="center"><div class="reward">🧘</div><h3>誘惑に勝った！</h3>${cheerHTML('urgeWin')}<button class="btn" data-act="close">OK</button></div>`);
+    checkBadges(); render();
+  },
+  urgeLose() {
+    modal(`<div class="center"><div class="reward">⏰</div><h3>OK、見てもいい</h3>
+      <p class="sub">ただし先に時計アプリで <b>15分タイマー</b> をセットしよう。<br>鳴ったら閉じる、を練習するだけでも前進です。</p>
+      <button class="btn" data-act="close">わかった</button></div>`);
+  },
+  runDay(el) { runDay = el.dataset.v; render(); },
+  runStep(el) { const i = $('#runKm'); i.value = fmtKm(Math.max(0, (Number(i.value) || 0) + Number(el.dataset.v))); },
+  runGoal(el) { S.run.goal = Math.min(40, Math.max(0.5, S.run.goal + Number(el.dataset.v))); save(); render(); },
+  saveRun() {
+    const km = Math.round(Number($('#runKm').value) * 100) / 100, min = Number($('#runMin').value) || 0;
+    if (!(km > 0) || km > 100) { toast('距離を入力してください'); return; }
+    const day = runDay === 'today' ? today() : addDays(today(), -1);
+    (S.run.hist[day] = S.run.hist[day] || []).push({ km, min: min > 0 ? Math.round(min * 10) / 10 : 0, id: Date.now() });
+    const ws = weekStart(today()), reached = weekKm(ws) >= S.run.goal && !S.run.weekDone[ws];
+    if (reached) S.run.weekDone[ws] = true;
+    save();
+    gain(10 + Math.round(km * 5), 5 + Math.round(km * 3));
+    modal(`<div class="center"><div class="reward">🏃</div><h3>${fmtKm(km)}km 走った！</h3>
+      ${min > 0 ? `<p class="sub">${min}分 ・ ${pace(km, min)}</p>` : ''}
+      ${reached ? `<p><b>今週の目標 ${fmtKm(S.run.goal)}km 達成！</b> ボーナス +50🪙</p>` : ''}
+      ${cheerHTML('run', { km: fmtKm(km) })}
+      <p class="sub">+${10 + Math.round(km * 5)}XP / +${5 + Math.round(km * 3)}🪙</p><button class="btn" data-act="close">OK</button></div>`);
+    if (reached) { S.coins += 50; save(); }
+    checkBadges(); checkMissionBonus(); render();
+  },
+  delRun(el) {
+    if (!confirm('この記録を削除しますか？')) return;
+    const d = el.dataset.d; S.run.hist[d] = (S.run.hist[d] || []).filter((r) => String(r.id) !== el.dataset.id);
+    if (!S.run.hist[d].length) delete S.run.hist[d];
+    save(); render();
+  },
+  oshiTap() { const m = $('#heroMsg'); if (m) m.textContent = cheerText('home'); },
+  oshiEdit() {
+    modal(`<h3>推しの設定</h3><p class="sub">画像はこのスマホの中だけに保存されます</p>
+      ${OSHI_IMG ? `<img class="oshi-prev" id="oPrev" src="${OSHI_IMG}">` : '<div class="oshi-prev" id="oPrev" style="display:grid;place-items:center;font-size:40px">💙</div>'}
+      <button class="btn ghost" data-act="oshiPick">画像を選ぶ</button><div class="gap"></div>
+      ${OSHI_IMG ? '<button class="btn ghost sm" data-act="oshiImgDel" style="width:100%">画像を外す</button><div class="gap"></div>' : ''}
+      <div class="sub">推しの名前</div><input class="field" id="oName" maxlength="20" value="${esc(S.oshi.name)}" placeholder="例：〇〇ちゃん"><div class="gap"></div>
+      <div class="sub">推しに呼ばれたい名前</div><input class="field" id="oYou" maxlength="20" value="${esc(S.oshi.you)}" placeholder="例：あなた / 自分のニックネーム"><div class="gap"></div>
+      <div class="sub">オリジナルのセリフ（1行に1つ・任意）</div>
+      <textarea class="field" id="oMsgs" placeholder="例：今日もえらいね！&#10;{you}のこと応援してるよ">${esc(S.oshi.msgs.join('\n'))}</textarea>
+      <div class="sub">{you} と書くと、呼ばれたい名前に置き換わります</div><div class="gap"></div>
+      <button class="btn" data-act="oshiSave">保存</button><div class="gap"></div><button class="btn ghost" data-act="close">閉じる</button>`);
+  },
+  oshiPick() {
+    const i = document.createElement('input'); i.type = 'file'; i.accept = 'image/*';
+    i.onchange = async () => {
+      if (!i.files[0]) return;
+      try {
+        const data = await loadImage(i.files[0]);
+        localStorage.setItem(IMG_KEY, data); OSHI_IMG = data;
+        const p = $('#oPrev'); if (p) p.outerHTML = `<img class="oshi-prev" id="oPrev" src="${data}">`;
+        toast('画像を設定しました');
+      } catch { toast('画像を読み込めませんでした'); }
+    };
+    i.click();
+  },
+  oshiImgDel() { localStorage.removeItem(IMG_KEY); OSHI_IMG = null; actions.oshiEdit(); },
+  oshiSave() {
+    S.oshi.name = $('#oName').value.trim(); S.oshi.you = $('#oYou').value.trim();
+    S.oshi.msgs = $('#oMsgs').value.split('\n').map((x) => x.trim()).filter(Boolean).slice(0, 50);
+    save(); closeModal(); render(); toast('保存しました');
+  },
+  buyFreeze() { if (S.coins < 100 || S.freezes >= 3) return; S.coins -= 100; S.freezes++; save(); toast('🛡 おやすみチケットを購入'); render(); },
+  buyReward(el) {
+    const r = S.rewards[el.dataset.i]; if (!r || S.coins < r.cost) return;
+    S.coins -= r.cost; save();
+    modal(`<div class="center"><div class="reward">🎁</div><h3>ごほうび獲得！</h3><p>${esc(r.name)}</p><p class="sub">がんばった自分に、遠慮なくどうぞ。</p><button class="btn" data-act="close">OK</button></div>`);
+    render();
+  },
+  delReward(el) { if (confirm('このごほうびを削除しますか？')) { S.rewards.splice(el.dataset.i, 1); save(); render(); } },
+  addReward() {
+    modal(`<h3>ごほうびを追加</h3><p class="sub">コインが貯まったら自分にあげるごほうび</p>
+      <input class="field" id="rwName" placeholder="例：カフェで好きな飲み物"><div class="gap"></div>
+      <input class="field" id="rwCost" type="number" inputmode="numeric" placeholder="必要コイン（例：300）"><div class="gap"></div>
+      <button class="btn" data-act="addRewardOk">追加</button><div class="gap"></div><button class="btn ghost" data-act="close">キャンセル</button>`);
+  },
+  addRewardOk() {
+    const name = $('#rwName').value.trim(), cost = Math.round(Number($('#rwCost').value));
+    if (!name || !(cost > 0)) { toast('名前とコインを入力してください'); return; }
+    S.rewards.push({ name: name.slice(0, 40), cost }); save(); closeModal(); render();
+  },
+  lvDown() { if (S.wo.level > 1) { S.wo.level--; S.wo.prog = 0; save(); render(); } },
+  lvUp() { S.wo.level++; S.wo.prog = 0; save(); render(); },
+  editGoal() {
+    modal(`<h3>スマホ時間の目標</h3><p class="sub">1日に YouTube・SNS などに使ってよい時間（分）</p>
+      <input class="field" id="gIn" type="number" inputmode="numeric" value="${S.sc.goal}"><div class="gap"></div>
+      <button class="btn" data-act="editGoalOk">保存</button><div class="gap"></div><button class="btn ghost" data-act="close">キャンセル</button>`);
+  },
+  editGoalOk() { const v = Math.round(Number($('#gIn').value)); if (v > 0) { S.sc.goal = v; save(); } closeModal(); render(); },
+  export() {
+    const blob = new Blob([JSON.stringify({ ...S, oshiImg: OSHI_IMG })], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `stepup-backup-${today()}.json`; a.click();
+  },
+  import() {
+    const i = document.createElement('input'); i.type = 'file'; i.accept = 'application/json,.json';
+    i.onchange = async () => {
+      try { const d = JSON.parse(await i.files[0].text()); if (!d.wo || !d.sc) throw 0;
+        if (d.oshiImg) { localStorage.setItem(IMG_KEY, d.oshiImg); OSHI_IMG = d.oshiImg; } delete d.oshiImg;
+        S = Object.assign(defaultState(), d); save(); toast('読み込みました'); render(); } catch { toast('読み込めませんでした'); }
+    };
+    i.click();
+  },
+  reset() { if (confirm('すべてのデータを消去します。よろしいですか？')) { localStorage.removeItem(KEY); localStorage.removeItem(IMG_KEY); location.reload(); } },
+  onbNext() {
+    modal(`<h3>今のスマホ時間は？</h3>
+      <p class="sub">YouTube・SNS・ゲームなどに、だいたい1日何分使っていますか？<br>（Android の設定 → Digital Wellbeing で確認できます）</p>
+      <div class="stepper"><button data-act="step" data-v="-30">−</button><input id="scInput" type="number" inputmode="numeric" value="180"><button data-act="step" data-v="30">＋</button></div>
+      <div class="sub center">分 / 日</div><div class="gap"></div>
+      <button class="btn" data-act="onbDone">はじめる</button>`);
+  },
+  onbDone() {
+    const v = Math.max(30, Math.round(Number($('#scInput').value) || 180));
+    S.sc.base = v; S.sc.goal = round5(v * 0.9); S.onboarded = true; S.lastCheck = today(); save();
+    modal(`<div class="center"><div class="reward">🚀</div><h3>準備完了！</h3>
+      <p>最初の目標は <b>${S.sc.goal}分以内</b>（今より約10%減）</p>
+      <p class="sub">運動は Lv.1 から。スクワット5回・膝つき腕立て3回・プランク10秒だけ。<br>2分で終わります。物足りなくても、まずは「毎日やる」を優先しよう。</p>
+      <p class="sub">プレゼント：🛡 おやすみチケット 1枚</p>
+      <button class="btn" data-act="close">OK</button></div>`);
+    render();
+  },
+};
+
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-act]');
+  if (a && !a.disabled) { actions[a.dataset.act](a); return; }
+  const t = e.target.closest('[data-tab]');
+  if (t) { tab = t.dataset.tab; render(); window.scrollTo(0, 0); }
+});
+$('#ov').addEventListener('click', (e) => { if (e.target.id === 'ov' && S.onboarded) closeModal(); });
+
+/* ================= 起動 ================= */
+function boot() {
+  if (!S.onboarded) {
+    render();
+    modal(`<div class="center"><div class="reward">👋</div><h3>STEP UP へようこそ</h3>
+      <p class="sub">運動を習慣にして、ダラダラ見てしまう時間を少しずつ減らすアプリです。<br><br>
+      最初はとても簡単な所から始めて、慣れたら少しずつレベルアップ。<br>大事なのは「完璧」より「毎日ちょっとでも」。</p>
+      <button class="btn" data-act="onbNext">はじめる</button></div>`);
+    return;
+  }
+  processMissedDays();
+  runWeeklyReview();
+  render();
+  if (S.login.last !== today()) setTimeout(() => actions.claimLogin(), 400);
+}
+// 日付が変わった後にアプリへ戻ってきたら更新
+let lastDay = today();
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && today() !== lastDay) { lastDay = today(); boot(); }
+});
+boot();
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
